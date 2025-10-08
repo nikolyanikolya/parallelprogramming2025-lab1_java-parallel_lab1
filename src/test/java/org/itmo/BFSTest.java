@@ -23,11 +23,11 @@ public class BFSTest {
                 System.out.println("Generating graph of size " + sizes[i] + " ...wait");
                 Graph g = new RandomGraphGenerator().generateGraph(r, sizes[i], connections[i]);
                 System.out.println("Generation completed!\nStarting bfs");
-                long serialTime = executeSerialBfsAndGetTime(g);
-                long parallelTime = executeParallelBfsAndGetTime(g);
+                long serialTimeInMillis = executeSerialBfsAndGetTime(g);
+                long parallelTimeInMillis = executeParallelBfsAndGetTime(g);
                 fw.append("Times for " + sizes[i] + " vertices and " + connections[i] + " connections: ");
-                fw.append("\nSerial: " + serialTime);
-                fw.append("\nParallel: " + parallelTime);
+                fw.append("\nSerial: " + serialTimeInMillis + " ms");
+                fw.append("\nParallel: " + parallelTimeInMillis + " ms");
                 fw.append("\n--------\n");
             }
             fw.flush();
