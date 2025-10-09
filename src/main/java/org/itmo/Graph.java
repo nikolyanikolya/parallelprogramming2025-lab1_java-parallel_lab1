@@ -6,18 +6,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 class Graph {
   private final int V;
   private final ArrayList<Integer>[] adjList;
-  private final int P = Runtime.getRuntime().availableProcessors();
-  private final ExecutorService threadPool = Executors.newFixedThreadPool(P);
-
-  {
-    Runtime.getRuntime().addShutdownHook(new Thread(threadPool::shutdown));
-  }
 
   Graph(int vertices) {
     this.V = vertices;
@@ -33,7 +26,7 @@ class Graph {
     }
   }
 
-  int[] parallelBFS(int startVertex) {
+  int[] parallelBFS(int startVertex, int P, ExecutorService pool) {
     AtomicBoolean[] visited = new AtomicBoolean[V];
     for (int i = 0; i < V; i++) {
       visited[i] = new AtomicBoolean(false);
@@ -65,7 +58,7 @@ class Graph {
             }
           }
           return nextLocalFrontiers;
-        }, threadPool);
+        }, pool);
       }
       frontiers = CompletableFuture.allOf(futures)
         .thenApply(unused ->
