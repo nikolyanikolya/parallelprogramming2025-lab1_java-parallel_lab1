@@ -1,17 +1,9 @@
 package org.itmo;
 
-import kotlin.ranges.IntRange;
-
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
-import static java.util.stream.Collectors.toList;
 
 class Graph {
   private final int V;
@@ -38,7 +30,7 @@ class Graph {
     for (int i = 0; i < V; i++) {
       visited[i] = new AtomicBoolean(false);
     }
-    ArrayList<Integer> frontiers = new ArrayList<>();
+    List<Integer> frontiers = new ArrayList<>();
     int[] dist = new int[V];
 
     frontiers.add(startVertex);
@@ -49,26 +41,31 @@ class Graph {
 
     while (!frontiers.isEmpty()) {
       int levelSize = frontiers.size();
-      ConcurrentLinkedQueue<Integer> nextFrontiers = new ConcurrentLinkedQueue<>();
-      CompletableFuture<Void>[] futures = new CompletableFuture[chunkCount];
+      CompletableFuture<List<Integer>>[] futures = new CompletableFuture[chunkCount];
       for (int i = 0; i < chunkCount; i++) {
         int from = i * chunkSize;
         int to = Math.min(from + chunkSize, levelSize);
-        ArrayList<Integer> finalFrontiers = frontiers;
-        futures[i] = CompletableFuture.runAsync(() -> {
+        List<Integer> finalFrontiers = frontiers;
+        futures[i] = CompletableFuture.supplyAsync(() -> {
+          List<Integer> localFrontiers = new ArrayList<>();
           for (int j = from; j < to; j++) {
             int vertex = finalFrontiers.get(j);
             for (var neighbour : adjList[vertex]) {
               if (visited[neighbour].compareAndSet(false, true)) {
-                nextFrontiers.add(neighbour);
+                localFrontiers.add(neighbour);
                 dist[neighbour] = dist[vertex] + 1;
               }
             }
           }
+          return localFrontiers;
         }, threadPool);
       }
-      CompletableFuture.allOf(futures).join();
-      frontiers = new ArrayList<>(nextFrontiers);
+      frontiers = CompletableFuture.allOf(futures)
+        .thenApply(unused ->
+          Arrays.stream(futures)
+            .flatMap(future -> future.join().stream())
+            .toList()
+        ).join();
     }
     return dist;
   }
