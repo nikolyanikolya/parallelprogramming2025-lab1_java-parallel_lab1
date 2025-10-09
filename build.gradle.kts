@@ -1,27 +1,28 @@
 plugins {
-    kotlin("jvm") version "1.9.20"
-    application
+  kotlin("jvm") version "1.9.20"
+  application
 }
 
 group = "org.itmo"
 version = "1.0-SNAPSHOT"
 
 repositories {
-    mavenCentral()
+  mavenCentral()
 }
 
 dependencies {
-    testImplementation(kotlin("test"))
+  testImplementation(kotlin("test"))
+  testImplementation("org.assertj:assertj-core:3.6.1")
 }
 
 tasks.test {
-    useJUnitPlatform()
+  useJUnitPlatform()
 }
 
 kotlin {
-    jvmToolchain(21)
+  jvmToolchain(21)
 }
 
 application {
-    mainClass.set("MainKt")
+  mainClass.set("MainKt")
 }
