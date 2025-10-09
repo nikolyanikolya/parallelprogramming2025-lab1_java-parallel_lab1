@@ -7,30 +7,30 @@ Serial: 0 ms
 Parallel: 1 ms
 --------
 Times for 1000 vertices and 5000 connections: 
-Serial: 0 ms
-Parallel: 2 ms
+Serial: 1 ms
+Parallel: 1 ms
 --------
 Times for 10000 vertices and 50000 connections: 
 Serial: 3 ms
-Parallel: 8 ms
+Parallel: 9 ms
 --------
 Times for 10000 vertices and 100000 connections: 
-Serial: 2 ms
-Parallel: 14 ms
---------
-Times for 50000 vertices and 1000000 connections: 
-Serial: 14 ms
+Serial: 1 ms
 Parallel: 17 ms
 --------
+Times for 50000 vertices and 1000000 connections: 
+Serial: 19 ms
+Parallel: 37 ms
+--------
 Times for 100000 vertices and 1000000 connections: 
-Serial: 20 ms
-Parallel: 10 ms
+Serial: 19 ms
+Parallel: 9 ms
 --------
 Times for 1000000 vertices and 10000000 connections: 
-Serial: 265 ms
-Parallel: 150 ms
+Serial: 279 ms
+Parallel: 112 ms
 --------
 Times for 2000000 vertices and 10000000 connections: 
-Serial: 524 ms
-Parallel: 328 ms
+Serial: 502 ms
+Parallel: 176 ms
 --------

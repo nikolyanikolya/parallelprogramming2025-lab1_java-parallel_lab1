@@ -34,33 +34,33 @@ class Graph {
     for (int i = 0; i < V; i++) {
       visited[i] = new AtomicBoolean(false);
     }
-    List<Integer> frontiers = new ArrayList<>();
+    List<Integer> frontiers = List.of(startVertex);
     int[] dist = new int[V];
 
-    frontiers.add(startVertex);
     visited[startVertex].set(true);
     dist[startVertex] = 0;
-    var chunkSize = (V + P) / P;
 
     while (!frontiers.isEmpty()) {
       int levelSize = frontiers.size();
-      CompletableFuture<List<Integer>>[] futures = new CompletableFuture[P];
-      for (int i = 0; i < P; i++) {
+      var chunkSize = (levelSize + P) / P;
+      var chunkCount = (int) Math.ceil((double) levelSize / chunkSize);
+      CompletableFuture<List<Integer>>[] futures = new CompletableFuture[chunkCount];
+      for (int i = 0; i < chunkCount; i++) {
         int from = i * chunkSize;
         int to = Math.min(from + chunkSize, levelSize);
         List<Integer> finalFrontiers = frontiers;
         futures[i] = CompletableFuture.supplyAsync(() -> {
-          List<Integer> localFrontiers = new ArrayList<>();
+          List<Integer> nextLocalFrontiers = new ArrayList<>();
           for (int j = from; j < to; j++) {
             int vertex = finalFrontiers.get(j);
             for (var neighbour : adjList[vertex]) {
               if (visited[neighbour].compareAndSet(false, true)) {
-                localFrontiers.add(neighbour);
+                nextLocalFrontiers.add(neighbour);
                 dist[neighbour] = dist[vertex] + 1;
               }
             }
           }
-          return localFrontiers;
+          return nextLocalFrontiers;
         }, threadPool);
       }
       frontiers = CompletableFuture.allOf(futures)
