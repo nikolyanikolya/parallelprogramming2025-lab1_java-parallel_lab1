@@ -1,9 +1,13 @@
 package org.itmo;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 class Graph {
   private final int V;
@@ -37,12 +41,11 @@ class Graph {
     visited[startVertex].set(true);
     dist[startVertex] = 0;
     var chunkSize = (V + P) / P;
-    var chunkCount = (int) Math.ceil((double) V / chunkSize);
 
     while (!frontiers.isEmpty()) {
       int levelSize = frontiers.size();
-      CompletableFuture<List<Integer>>[] futures = new CompletableFuture[chunkCount];
-      for (int i = 0; i < chunkCount; i++) {
+      CompletableFuture<List<Integer>>[] futures = new CompletableFuture[P];
+      for (int i = 0; i < P; i++) {
         int from = i * chunkSize;
         int to = Math.min(from + chunkSize, levelSize);
         List<Integer> finalFrontiers = frontiers;
