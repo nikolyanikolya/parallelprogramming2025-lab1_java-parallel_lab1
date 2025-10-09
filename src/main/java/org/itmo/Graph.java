@@ -15,6 +15,10 @@ class Graph {
   private final int P = Runtime.getRuntime().availableProcessors();
   private final ExecutorService threadPool = Executors.newFixedThreadPool(P);
 
+  {
+    Runtime.getRuntime().addShutdownHook(new Thread(threadPool::shutdown));
+  }
+
   Graph(int vertices) {
     this.V = vertices;
     adjList = new ArrayList[vertices];
