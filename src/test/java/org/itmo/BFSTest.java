@@ -7,8 +7,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
@@ -19,10 +17,8 @@ public class BFSTest {
     int[] sizes = new int[]{10, 100, 1000, 10_000, 10_000, 50_000, 100_000, 1_000_000, 2_000_000};
     int[] connections = new int[]{50, 500, 5000, 50_000, 100_000, 1_000_000, 1_000_000, 10_000_000, 10_000_000};
     Random r = new Random(42);
-    int P = Runtime.getRuntime().availableProcessors();
     try (
       FileWriter fw = new FileWriter("tmp/results.txt");
-      ExecutorService pool = Executors.newFixedThreadPool(P);
     ) {
       for (int i = 0; i < sizes.length; i++) {
         System.out.println("--------------------------");
@@ -32,7 +28,7 @@ public class BFSTest {
         var serialTimedValue = executeSerialBfsAndGetTime(g);
         var serialTime = serialTimedValue.getFirst();
         var serialValue = serialTimedValue.getSecond();
-        var parallelTimedValue = executeParallelBfsAndGetTime(g, P, pool);
+        var parallelTimedValue = executeParallelBfsAndGetTime(g);
         var parallelTime = parallelTimedValue.getFirst();
         var parallelValue = parallelTimedValue.getSecond();
         assertThat(Arrays.equals(serialValue, parallelValue)).isTrue();
@@ -50,14 +46,14 @@ public class BFSTest {
     long startTime = System.currentTimeMillis();
     var res = g.bfs(0);
     long endTime = System.currentTimeMillis();
-    return new Pair(endTime - startTime, res);
+    return new Pair<>(endTime - startTime, res);
   }
 
-  private Pair<Long, int[]> executeParallelBfsAndGetTime(Graph g, int P, ExecutorService pool) {
+  private Pair<Long, int[]> executeParallelBfsAndGetTime(Graph g) {
     long startTime = System.currentTimeMillis();
-    var res = g.parallelBFS(0, P, pool);
+    var res = g.parallelBFS(0);
     long endTime = System.currentTimeMillis();
-    return new Pair(endTime - startTime, res);
+    return new Pair<>(endTime - startTime, res);
   }
 
 }

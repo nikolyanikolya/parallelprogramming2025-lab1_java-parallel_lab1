@@ -5,16 +5,34 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 class Graph {
   private final int V;
+  private final int P;
   private final ArrayList<Integer>[] adjList;
+  AtomicBoolean[] visited;
+  int[] dist;
 
   Graph(int vertices) {
-    this.V = vertices;
+    V = vertices;
+    P = Runtime.getRuntime().availableProcessors();
     adjList = new ArrayList[vertices];
+    visited = new AtomicBoolean[V];
+    dist = new int[V];
+    for (int i = 0; i < vertices; ++i) {
+      adjList[i] = new ArrayList<>();
+    }
+  }
+
+  Graph(int vertices, int P) {
+    V = vertices;
+    this.P = P;
+    adjList = new ArrayList[vertices];
+    visited = new AtomicBoolean[V];
+    dist = new int[V];
     for (int i = 0; i < vertices; ++i) {
       adjList[i] = new ArrayList<>();
     }
@@ -26,54 +44,87 @@ class Graph {
     }
   }
 
-  int[] parallelBFS(int startVertex, int P, ExecutorService pool) {
-    AtomicBoolean[] visited = new AtomicBoolean[V];
+  int[] parallelBFS(int startVertex) {
+    try (
+      var pool = Executors.newFixedThreadPool(P);
+    ) {
+      var frontiers = setUp(startVertex);
+
+      while (!frontiers.isEmpty()) {
+        frontiers = combineFutures(bfsStep(frontiers, pool));
+      }
+      return dist;
+    }
+  }
+
+  List<Integer> setUp(int startVertex) {
+    Arrays.fill(dist, -1);
     for (int i = 0; i < V; i++) {
       visited[i] = new AtomicBoolean(false);
     }
     List<Integer> frontiers = List.of(startVertex);
-    int[] dist = new int[V];
-
     visited[startVertex].set(true);
     dist[startVertex] = 0;
 
-    while (!frontiers.isEmpty()) {
-      int levelSize = frontiers.size();
-      var chunkSize = (levelSize + P) / P;
-      var chunkCount = (int) Math.ceil((double) levelSize / chunkSize);
-      CompletableFuture<List<Integer>>[] futures = new CompletableFuture[chunkCount];
-      for (int i = 0; i < chunkCount; i++) {
-        int from = i * chunkSize;
-        int to = Math.min(from + chunkSize, levelSize);
-        List<Integer> finalFrontiers = frontiers;
-        futures[i] = CompletableFuture.supplyAsync(() -> {
-          List<Integer> nextLocalFrontiers = new ArrayList<>();
-          for (int j = from; j < to; j++) {
-            int vertex = finalFrontiers.get(j);
-            for (var neighbour : adjList[vertex]) {
-              if (visited[neighbour].compareAndSet(false, true)) {
-                nextLocalFrontiers.add(neighbour);
-                dist[neighbour] = dist[vertex] + 1;
-              }
-            }
-          }
-          return nextLocalFrontiers;
-        }, pool);
-      }
-      frontiers = CompletableFuture.allOf(futures)
-        .thenApply(unused ->
-          Arrays.stream(futures)
-            .flatMap(future -> future.join().stream())
-            .toList()
-        ).join();
+    return frontiers;
+  }
+
+  CompletableFuture<List<Integer>>[] bfsStep(List<Integer> frontiers, Executor pool) {
+    var actorContext = provideActorContext(frontiers);
+    for (int i = 0; i < actorContext.chunkCount(); i++) {
+      actor(frontiers, i, actorContext, pool);
     }
-    return dist;
+    return actorContext.futures();
+  }
+
+  BfsActorContext provideActorContext(List<Integer> frontiers) {
+    int frontierSize = frontiers.size();
+    var chunkSize = (frontierSize + P) / P;
+    var chunkCount = (int) Math.ceil((double) frontierSize / chunkSize);
+    CompletableFuture<List<Integer>>[] futures = new CompletableFuture[chunkCount];
+    return new BfsActorContext(frontierSize, chunkSize, chunkCount, futures);
+  }
+
+  CompletableFuture<List<Integer>> actor(
+    List<Integer> frontiers,
+    int chunkIndex,
+    BfsActorContext actorContext,
+    Executor pool
+  ) {
+    int chunkSize = actorContext.chunkSize();
+    int frontierSize = actorContext.frontierSize();
+    var futures = actorContext.futures();
+    int from = chunkIndex * chunkSize;
+    int to = Math.min(from + chunkSize, frontierSize);
+    futures[chunkIndex] = CompletableFuture.supplyAsync(() -> {
+      List<Integer> nextLocalFrontiers = new ArrayList<>();
+      for (int j = from; j < to; j++) {
+        int vertex = frontiers.get(j);
+        for (var neighbour : adjList[vertex]) {
+          if (visited[neighbour].compareAndSet(false, true)) {
+            nextLocalFrontiers.add(neighbour);
+            dist[neighbour] = dist[vertex] + 1;
+          }
+        }
+      }
+      return nextLocalFrontiers;
+    }, pool);
+    return futures[chunkIndex];
+  }
+
+  List<Integer> combineFutures(CompletableFuture<List<Integer>>[] futures) {
+    return CompletableFuture.allOf(futures)
+      .thenApply(unused ->
+        Arrays.stream(futures)
+          .flatMap(future -> future.join().stream())
+          .toList()
+      ).join();
   }
 
   //Generated by ChatGPT
   int[] bfs(int startVertex) {
     boolean[] visited = new boolean[V];
-    int[] dist = new int[V];
+    Arrays.fill(dist, -1);
 
     LinkedList<Integer> queue = new LinkedList<>();
 
