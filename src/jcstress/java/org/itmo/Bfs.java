@@ -47,17 +47,17 @@ public class Bfs {
   }
 
   @Actor
-  public void actor0() {
+  public void poolActor0() {
     actor(0);
   }
 
   @Actor
-  public void actor1() {
+  public void poolActor1() {
     actor(1);
   }
 
   @Actor
-  public void actor2() {
+  public void poolActor2() {
     actor(2);
   }
 
