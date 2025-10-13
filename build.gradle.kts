@@ -4,14 +4,6 @@ plugins {
   id("io.github.reyerizo.gradle.jcstress") version "0.8.15"
 }
 
-jcstress {
-  mode = "quick"
-  iterations = "10"
-  forks = "1"
-  cpuCount = "6"
-  timeMillis = "1000"
-}
-
 group = "org.itmo"
 version = "1.0-SNAPSHOT"
 

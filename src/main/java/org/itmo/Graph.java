@@ -7,31 +7,23 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 class Graph {
   private final int V;
   private final int P;
   private final ArrayList<Integer>[] adjList;
-  AtomicBoolean[] visited;
+  private final boolean[] visited;
   int[] dist;
 
   Graph(int vertices) {
-    V = vertices;
-    P = Runtime.getRuntime().availableProcessors();
-    adjList = new ArrayList[vertices];
-    visited = new AtomicBoolean[V];
-    dist = new int[V];
-    for (int i = 0; i < vertices; ++i) {
-      adjList[i] = new ArrayList<>();
-    }
+    this(vertices, Runtime.getRuntime().availableProcessors());
   }
 
   Graph(int vertices, int P) {
     V = vertices;
     this.P = P;
     adjList = new ArrayList[vertices];
-    visited = new AtomicBoolean[V];
+    visited = new boolean[V];
     dist = new int[V];
     for (int i = 0; i < vertices; ++i) {
       adjList[i] = new ArrayList<>();
@@ -59,11 +51,9 @@ class Graph {
 
   List<Integer> setUp(int startVertex) {
     Arrays.fill(dist, -1);
-    for (int i = 0; i < V; i++) {
-      visited[i] = new AtomicBoolean(false);
-    }
+    Arrays.fill(visited,false);
     List<Integer> frontiers = List.of(startVertex);
-    visited[startVertex].set(true);
+    visited[startVertex] = true;
     dist[startVertex] = 0;
 
     return frontiers;
@@ -101,7 +91,8 @@ class Graph {
       for (int j = from; j < to; j++) {
         int vertex = frontiers.get(j);
         for (var neighbour : adjList[vertex]) {
-          if (visited[neighbour].compareAndSet(false, true)) {
+          if (!visited[neighbour]) {
+            visited[neighbour] = true;
             nextLocalFrontiers.add(neighbour);
             dist[neighbour] = dist[vertex] + 1;
           }
@@ -113,12 +104,10 @@ class Graph {
   }
 
   List<Integer> combineFutures(CompletableFuture<List<Integer>>[] futures) {
-    return CompletableFuture.allOf(futures)
-      .thenApply(unused ->
-        Arrays.stream(futures)
+    CompletableFuture.allOf(futures).join();
+    return Arrays.stream(futures)
           .flatMap(future -> future.join().stream())
-          .toList()
-      ).join();
+          .toList();
   }
 
   int[] bfs(int startVertex) {

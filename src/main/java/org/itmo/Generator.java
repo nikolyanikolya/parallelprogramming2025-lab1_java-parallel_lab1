@@ -13,9 +13,9 @@ import java.util.stream.IntStream;
 public class Generator {
 
   public static void main(String[] args) {
-    // inputTimeline(false);
+    inputTimeline(false);
     // inputTimeline(true);
-    resourcesTimeline();
+    // resourcesTimeline();
   }
 
   private static void resourcesTimeline() {
