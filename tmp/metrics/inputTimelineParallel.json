@@ -1,0 +1,92 @@
+[
+  {
+    "v": 100000,
+    "e": 300000,
+    "time": 43,
+    "isParallel": true
+  },
+  {
+    "v": 200000,
+    "e": 600000,
+    "time": 42,
+    "isParallel": true
+  },
+  {
+    "v": 300000,
+    "e": 900000,
+    "time": 13,
+    "isParallel": true
+  },
+  {
+    "v": 400000,
+    "e": 1200000,
+    "time": 24,
+    "isParallel": true
+  },
+  {
+    "v": 500000,
+    "e": 1500000,
+    "time": 21,
+    "isParallel": true
+  },
+  {
+    "v": 600000,
+    "e": 1800000,
+    "time": 34,
+    "isParallel": true
+  },
+  {
+    "v": 700000,
+    "e": 2100000,
+    "time": 27,
+    "isParallel": true
+  },
+  {
+    "v": 800000,
+    "e": 2400000,
+    "time": 69,
+    "isParallel": true
+  },
+  {
+    "v": 900000,
+    "e": 2700000,
+    "time": 43,
+    "isParallel": true
+  },
+  {
+    "v": 1000000,
+    "e": 3000000,
+    "time": 46,
+    "isParallel": true
+  },
+  {
+    "v": 1200000,
+    "e": 3600000,
+    "time": 55,
+    "isParallel": true
+  },
+  {
+    "v": 1400000,
+    "e": 4200000,
+    "time": 82,
+    "isParallel": true
+  },
+  {
+    "v": 1600000,
+    "e": 4800000,
+    "time": 114,
+    "isParallel": true
+  },
+  {
+    "v": 1800000,
+    "e": 5400000,
+    "time": 83,
+    "isParallel": true
+  },
+  {
+    "v": 2000000,
+    "e": 6000000,
+    "time": 101,
+    "isParallel": true
+  }
+]
